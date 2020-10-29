@@ -2,7 +2,7 @@
 
 import cupom
 import pytest
-
+import datetime
 
 def verifica_campo_obrigatorio_objeto(mensagem_esperada, loja):
     with pytest.raises(Exception) as excinfo:
@@ -10,6 +10,11 @@ def verifica_campo_obrigatorio_objeto(mensagem_esperada, loja):
     the_exception = excinfo.value
     assert mensagem_esperada == str(the_exception)
 
+def verifica_campo_obrigatorio_venda(mensagem_esperada, venda):
+    with pytest.raises(Exception) as excinfo:
+        venda.dados_venda()
+        the_exception = excinfo.value
+        assert mensagem_esperada == str(the_exception)
 
 # Todas as variaveis preenchidas
 NOME_LOJA = "Loja 1"
@@ -345,22 +350,41 @@ IE: 123456789'''
 def test_valida_numero_complemento_e_bairro():
     assert LOJA_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO.dados_loja() == TEXTO_ESPERADO_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO
 
+ccf = "1234"
+coo = "123456"
+
+datahora = datetime.datetime(2020, 10, 27, 9, 20, 15)
+COO_VALIDACAO = cupom.Venda(LOJA_COMPLETA, datahora, ccf, "")
+CCF_VALIDACAO = cupom.Venda(LOJA_COMPLETA, datahora, "", coo)
+
+def test_valida_coo():
+    verifica_campo_obrigatorio_venda("O Contador de Cupom Fiscal (COO) é obrigatório", COO_VALIDACAO)
+
+def test_valida_ccf():
+    verifica_campo_obrigatorio_venda("O Contador de Cupom Fiscal (CCF) é obrigatório", CCF_VALIDACAO)
 
 def test_exercicio2_customizado():
 
-    # Defina seus próprios valores para as variáveis a seguir
-    nome_loja = ""
-    logradouro = ""
-    numero = 0
-    complemento = ""
-    bairro = ""
-    municipio = ""
-    estado = ""
-    cep = ""
-    telefone = ""
-    observacao = ""
-    cnpj = ""
-    inscricao_estadual = ""
+    nome_loja = "Magic Box"
+    logradouro = "Baker St"
+    numero = 221
+    complemento = "EDA A24/25/26"
+    bairro = "Marylebone"
+    municipio = "Sunnydale"
+    estado = "CA"
+    cep = "79297"
+    telefone = "(213) 70374-7092"
+    observacao = "Loja TW (BTVS)"
+    cnpj = "98.650.809/0001-63"
+    inscricao_estadual = "55021852-1"
+
+    expected = "Magic Box\n"
+    expected += "Baker St, 221 EDA A24/25/26\n"
+    expected += "Marylebone - Sunnydale - CA\n"
+    expected += "CEP:79297 Tel (213) 70374-7092\n"
+    expected += "Loja TW (BTVS)\n"
+    expected += "CNPJ: 98.650.809/0001-63\n"
+    expected += "IE: 55021852-1"
 
     endereco_customizado = cupom.Endereco(logradouro, numero, complemento,
                                  bairro, municipio, estado, cep)
@@ -368,5 +392,4 @@ def test_exercicio2_customizado():
                                  observacao, cnpj, inscricao_estadual)
 
     # E atualize o texto esperado abaixo
-    assert (loja_customizada.dados_loja() == """
-""")
+    assert (loja_customizada.dados_loja() == expected)
